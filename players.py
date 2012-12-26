@@ -23,7 +23,7 @@ class Player(db.Model):
 	isMember = db.BooleanProperty()
 
 	def __repr__(self):
-		return str(self.key().id()) + " " + self.name
+		return unicode(self.key().id()) + " " + self.name
 
 class EditPlayerForm(djangoforms.ModelForm):
 	class Meta:

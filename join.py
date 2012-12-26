@@ -55,6 +55,6 @@ def go(request):
 		return shortcuts.render_to_response('join.html', {'form': form})
 
 	player.put()
-	logging.info("Created player " + str(player))
+	logging.info("Created player " + unicode(player))
 	
 	return http.HttpResponseRedirect('/player/' + str(player.key().id()))

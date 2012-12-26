@@ -24,7 +24,7 @@ def createGames():
 	#Retrieve all games that are ongoing
 	activeGames = list(Game.all().filter("winner =", None))
 	activeGameIDs = dict([[g.key().id(), g] for g in activeGames])
-	logging.info("Active games: " + str(activeGameIDs))
+	logging.info("Active games: " + unicode(activeGameIDs))
 
 	#Throw all of the player IDs that are in these ongoing games into a dictionary
 	playerIDsInGames = dict([[gp.playerID, gp] for gp in GamePlayer.all() if gp.gameID in activeGameIDs])
@@ -32,7 +32,7 @@ def createGames():
 	#Find all players who aren't in the dictionary (and therefore aren't in any games) and also have not left the CLOT (isParticipating is true)
 	allPlayers = Player.all()
 	playersNotInGames = [p for p in allPlayers if p.isParticipating and p.key().id() not in playerIDsInGames]
-	logging.info("Players not in games: " + str(playersNotInGames))
+	logging.info("Players not in games: " + ','.join([unicode(p) for p in playersNotInGames]))
 
 	#Randomize the order
 	random.shuffle(playersNotInGames)
@@ -42,7 +42,7 @@ def createGames():
 
 	#Create a game for everyone not in a game.
 	gamesCreated = [createGame(pair, templateID) for pair in pairs(playersNotInGames)]
-	logging.info("Created games " + str(gamesCreated))
+	logging.info("Created games " + unicode(','.join([unicode(g) for g in gamesCreated])))
 
 def pairs(lst):
 	"""Simple helper function that groups a list into pairs.  For example, [1,2,3,4,5] would return [1,2],[3,4]"""

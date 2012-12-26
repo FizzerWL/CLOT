@@ -40,7 +40,7 @@ def checkInProgressGames():
 		if state == 'Finished':
 			#It's finished. Record the winner and save it back.
 			winner = findWinner(data)
-			logging.info('Identified the winner of game ' + str(g.wlnetGameID) + ' is ' + str(winner))
+			logging.info('Identified the winner of game ' + str(g.wlnetGameID) + ' is ' + unicode(winner))
 			g.winner = winner.key().id()
 			g.dateEnded = datetime.datetime.now()
 			g.save()

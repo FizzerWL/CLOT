@@ -42,6 +42,6 @@ def go(request):
 	player.isParticipating = False
 	player.save()
 
-	logging.info("Player left ladder " + str(player))
+	logging.info("Player left ladder " + unicode(player))
 	return http.HttpResponseRedirect('/player/' + str(player.key().id()))
 

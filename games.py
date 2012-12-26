@@ -60,6 +60,6 @@ def createGame(players, templateID):
 	for p in players:
 		GamePlayer(playerID = p.key().id(), gameID = g.key().id()).save()
 
-	logging.info("Created game " + str(g.key().id()) + " '" + gameName + "'")
+	logging.info("Created game " + str(g.key().id()) + " '" + gameName + "', wlnetGameID=" + str(gid))
 
 	return g
