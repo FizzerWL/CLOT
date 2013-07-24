@@ -1,60 +1,55 @@
 ﻿import os
 
 from google.appengine.ext import db
-from google.appengine.ext.db import djangoforms
 
-import django
-from django.utils import simplejson as json
 import logging
+import webapp2
 
-from django import http
-from django import shortcuts
-from django import newforms as forms
-from main import hitapi
-from main import getClotConfig
-from main import group
+
+from api import hitapi
+from main import *
 from players import Player
+from wtforms import *
+import json
 
 
-class JoinForm(forms.Form):
-	inviteToken = forms.CharField(label="Invite Token")
+class JoinForm(Form):
+  inviteToken = TextField('Invite token', [validators.required()])
 
-def go(request):
-	"""Create a player.	GET shows a blank form, POST processes it."""
 
-	form = JoinForm(data=request.POST or None)
+class JoinPage(webapp2.RequestHandler):
+  def get(self):
+    self.response.write(get_template('join.html').render({ 'form': JoinForm() }))
 
-	if not request.POST:
-		return shortcuts.render_to_response('join.html', {'form': form})
+  def post(self):
 
-	if not form.is_valid():
-		return shortcuts.render_to_response('join.html', {'form': form})
+    form = JoinForm(self.request.POST)
 
-	inviteToken = form.clean_data['inviteToken']
+    if not form.validate():
+      return self.response.write("You must enter an invite token")
+      
 
-	#Call the warlight API to get the name, color, and verify that the invite token is correct
-	apiret = hitapi('/API/ValidateInviteToken', { 'Token':  inviteToken })
+    inviteToken = form.inviteToken.data
 
-	if not "tokenIsValid" in apiret:
-		form.errors['inviteToken'] = 'The supplied invite token is invalid. Please ensure you copied it from WarLight.net correctly.'
-		return shortcuts.render_to_response('join.html', {'form': form})
+    #Call the warlight API to get the name, color, and verify that the invite token is correct
+    apiret = hitapi('/API/ValidateInviteToken', { 'Token':  inviteToken })
 
-	#Ensure this invite token doesn't already exist
-	existing = Player.all().filter('inviteToken =', inviteToken).get()
-	if existing:
-		#If someone tries to join when they're already in the DB, just set their isParticipating flag back to true
-		existing.isParticipating = True
-		existing.save()
-		return http.HttpResponseRedirect('/player/' + str(existing.key().id()))
+    if not "tokenIsValid" in apiret:
+      return self.response.write('The supplied invite token is invalid. Please ensure you copied it from WarLight.net correctly.')
 
-	data = json.loads(apiret)
-	player = Player(inviteToken=inviteToken, name=data['name'], color=data['color'], isMember=data['isMember'].lower() == 'true')
+    #Ensure this invite token doesn't already exist
+    existing = Player.all().filter('inviteToken =', inviteToken).get()
+    if existing:
+      #If someone tries to join when they're already in the DB, just set their isParticipating flag back to true
+      existing.isParticipating = True
+      existing.save()
+      return self.redirect('/player/' + str(existing.key().id()))
 
-	if getClotConfig().membersOnly and not player.isMember:
-		form.errors['inviteToken'] = 'This site only allows members to join.	See the Membership tab on WarLight.net for information about memberships.'
-		return shortcuts.render_to_response('join.html', {'form': form})
+    data = json.loads(apiret)
+    player = Player(inviteToken=inviteToken, name=data['name'], color=data['color'])
 
-	player.put()
-	logging.info("Created player " + unicode(player))
-	
-	return http.HttpResponseRedirect('/player/' + str(player.key().id()))
+
+    player.put()
+    logging.info("Created player " + unicode(player))
+  
+    return self.redirect('/player/' + str(player.key().id()))

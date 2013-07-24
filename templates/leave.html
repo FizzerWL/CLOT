@@ -1,4 +1,4 @@
-{%extends "base.html"%}
+{%extends "templates/base.html"%}
 {%block body%}
 
 <a href="/">&lt;&lt; Back</a>
@@ -13,13 +13,10 @@ To leave, you must provide your <b>invite token</b>.  To get your invite token, 
         {% for field in form %}
         <tr>
             <td>
-                {{ field.label_tag }}:
+                {{ field.label }}:
             </td>
             <td>
                 {{ field }}
-            </td>
-            <td style="color: red">
-                {{ field.errors }}
             </td>
 
         </tr>    

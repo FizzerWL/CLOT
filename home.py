@@ -1,30 +1,27 @@
 import os
 
 from google.appengine.ext import db
-from google.appengine.ext.db import djangoforms
 
-import django
 import logging
-from django import http
-from django import shortcuts
+import webapp2
+from main import *
+
 from players import Player
-from games import Game
 from games import GamePlayer
-from main import group
-from main import ClotConfig
-from main import getClotConfig
+from games import Game
 
-def index(request):
-	"""Request / """
-	#Check if we need to do first-time setup
-	if ClotConfig.all().count() == 0:
-		return http.HttpResponseRedirect('/setup')
+class HomePage(webapp2.RequestHandler):
+  def get(self):
 
-	#Gather data used by home.html
-	players = Player.all()
-	playersDict = dict([(p.key().id(),p) for p in players])
+    #Check if we need to do first-time setup
+    if ClotConfig.all().count() == 0 and not api.TestMode:
+      return self.redirect('/setup')
 
-	gamePlayers = group(GamePlayer.all(), lambda z: z.gameID)
-	games = Game.all()
+    #Gather data used by home.html
+    players = Player.all()
+    playersDict = dict([(p.key().id(),p) for p in players])
 
-	return shortcuts.render_to_response('home.html',{'players': players, 'config': getClotConfig(), 'games': games})
+    gamePlayers = group(GamePlayer.all(), lambda z: z.gameID)
+    games = Game.all()
+
+    self.response.write(get_template('home.html').render({ 'players': players, 'games': games}))

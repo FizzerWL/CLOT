@@ -1,11 +1,70 @@
-﻿{%extends "base.html"%}
+{%extends "templates/base.html"%}
 {%block body%}
 
+<h1>Test Page</h1>
 
-<h1>Test</h1>
+You wound up here because api.TestMode is enabled.  This page can be used to test your local cron/clot code locally with fake data.<br /><br />
 
-This page is just for testing.  Nothing in the app redirects here.
-<br /><br />
-  {{testdata|escape}}
+<a href="/">&lt;&lt; Back</a> | <a href="/test">Refresh</a><br /><br />
+
+<form method="post">
+    <input type="submit" name="ClearData" value="Clear Data" />
+    <input type="submit" name="RunCron" value="Run Cron" />
+    <br />
+    <input type="text" name="NumPlayers" style="width: 30px" value="16" /> <input type="submit" name="AddPlayers" value="Add Players" />
+</form>
+
+{{ message }}
+
+<table>
+    <tr>
+        <td valign="top">
+
+            
+            <h2>{{ players.count() }} Players</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <td>Rank</td>
+                        <td>Player</td>
+                    </tr>
+                </thead>
+                {%for player in players%}
+                <tr>
+        
+                    <td>{{player.currentRank}}</td>
+                    <td><a href="player/{{player.key.id}}">{{player.name|escape}}</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+
+
+        </td>
+        <td valign="top">
+
+
+            
+            <h2>{{ games.count() }} Games</h2>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <td>Game</td>
+                    </tr>
+                </thead>
+                {%for game in games%}
+    
+                <tr>
+                    <td><a href="http://warlight.net/MultiPlayer?GameID={{ game.wlnetGameID}}">{{game.name}}</a></td>
+                </tr>
+
+                {%endfor%}
+            </table>
+
+        </td>
+    </tr>
+</table>
+
+
+
 {%endblock%}
-

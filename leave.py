@@ -1,47 +1,42 @@
 ﻿import os
 
 from google.appengine.ext import db
-from google.appengine.ext.db import djangoforms
 
-import django
-from django.utils import simplejson as json
 import logging
+import webapp2
 
-from django import http
-from django import shortcuts
-from django import newforms as forms
-from main import hitapi
-from main import getClotConfig
-from main import group
+
+from wtforms import *
+from main import *
 from players import Player
 
 
-class LeaveForm(forms.Form):
-	inviteToken = forms.CharField(label="Invite Token")
+class LeaveForm(Form):
+  inviteToken = TextField("Invite Token", [validators.required()])
 
-def go(request):
-	"""This allows players to leave the CLOT.  GET shows a blank form, POST processes it."""
+class LeavePage(webapp2.RequestHandler):
+  def get(self):
+    self.response.write(get_template('leave.html').render({ 'form': LeaveForm() }))
 
-	form = LeaveForm(data=request.POST or None)
+  def post(self):
 
-	if not request.POST:
-		return shortcuts.render_to_response('leave.html', {'form': form})
+    form = LeaveForm(self.request.POST)
 
-	if not form.is_valid():
-		return shortcuts.render_to_response('leave.html', {'form': form})
+    if not form.validate():
+      return self.response.write("Please enter your invite token")
 
-	inviteToken = form.clean_data['inviteToken']
 
-	#Find the player by their token
-	player = Player.all().filter('inviteToken =', inviteToken).get()
-	if not player:
-		form.errors['inviteToken'] = 'Invite token is invalid.'
-		return shortcuts.render_to_response('leave.html', {'form': form})
+    inviteToken = form.inviteToken.data
 
-	#When they leave, just set their isParticipating to false
-	player.isParticipating = False
-	player.save()
+    #Find the player by their token
+    player = Player.all().filter('inviteToken =', inviteToken).get()
+    if not player:
+      return self.response.write("Invite token is invalid")
 
-	logging.info("Player left ladder " + unicode(player))
-	return http.HttpResponseRedirect('/player/' + str(player.key().id()))
+    #When they leave, just set their isParticipating to false
+    player.isParticipating = False
+    player.save()
+
+    logging.info("Player left ladder " + unicode(player))
+    self.redirect('/player/' + str(player.key().id()))
 
