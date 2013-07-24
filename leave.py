@@ -29,14 +29,14 @@ class LeavePage(webapp2.RequestHandler):
     inviteToken = form.inviteToken.data
 
     #Find the player by their token
-    player = Player.all().filter('inviteToken =', inviteToken).get()
+    player = Player.query(Player.inviteToken == inviteToken).get()
     if not player:
       return self.response.write("Invite token is invalid")
 
     #When they leave, just set their isParticipating to false
     player.isParticipating = False
-    player.save()
+    player.put()
 
     logging.info("Player left ladder " + unicode(player))
-    self.redirect('/player/' + str(player.key().id()))
+    self.redirect('/player/' + str(player.key.id()))
 

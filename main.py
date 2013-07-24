@@ -1,5 +1,5 @@
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 import httplib
 import urllib
@@ -16,16 +16,16 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 def get_template(name):
   return JINJA_ENVIRONMENT.get_template('templates/' + name)
 
-class ClotConfig(db.Model):
-  adminEmail = db.StringProperty(required=True)
-  adminApiToken = db.StringProperty(required=True)
+class ClotConfig(ndb.Model):
+  adminEmail = ndb.StringProperty(required=True)
+  adminApiToken = ndb.StringProperty(required=True)
 
 
 def getClotConfig():
   if api.TestMode:
     return ClotConfig(adminEmail='bogus', adminApiToken='bogus') #return a bogus one while we're in test mode. It'll never be used.
 
-  for c in ClotConfig.all():
+  for c in ClotConfig.query():
       return c
 
 

@@ -30,7 +30,7 @@ def checkInProgressGames():
   """This is called periodically to look for games that are finished.  If we find a finished game, we record the winner"""
 
   #Find all games that we think aren't finished
-  activeGames = Game.all().filter("winner =", None)
+  activeGames = Game.query(Game.winner == None)
 
   for g in activeGames:
     #call WarLight's GameFeed API so that it can tell us if it's finished or not
@@ -43,9 +43,9 @@ def checkInProgressGames():
       #It's finished. Record the winner and save it back.
       winner = findWinner(data)
       logging.info('Identified the winner of game ' + str(g.wlnetGameID) + ' is ' + unicode(winner))
-      g.winner = winner.key().id()
+      g.winner = winner.key.id()
       g.dateEnded = datetime.datetime.now()
-      g.save()
+      g.put()
     else:
       #It's still going.
       logging.info('Game ' + str(g.wlnetGameID) + ' is not finished, state=' + state + ', numTurns=' + data['numberOfTurns'])
@@ -54,5 +54,5 @@ def findWinner(data):
   """Simple helper function to return the Player who won the game.  This takes json data returned by the GameFeed 
   API.  We just look for a player with the "won" state and then retrieve their Player instance from the database"""
   winnerInviteToken = filter(lambda p: p['state'] == 'Won', data['players'])[0]["id"]
-  return Player.all().filter('inviteToken =', winnerInviteToken)[0]
+  return Player.query(Player.inviteToken == winnerInviteToken).get()
 

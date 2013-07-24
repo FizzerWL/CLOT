@@ -1,17 +1,17 @@
 import os
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 import webapp2
 
 
-class Player(db.Model):
-  name = db.StringProperty()
-  inviteToken = db.StringProperty(required=True)
-  color = db.StringProperty()
-  isParticipating = db.BooleanProperty(default=True, required=True)
-  currentRank = db.IntegerProperty(default=0, required=True)
-  created = db.DateTimeProperty(auto_now_add=True)
-  modified = db.DateTimeProperty(auto_now=True)
+class Player(ndb.Model):
+  name = ndb.StringProperty()
+  inviteToken = ndb.StringProperty(required=True)
+  color = ndb.StringProperty()
+  isParticipating = ndb.BooleanProperty(default=True)
+  currentRank = ndb.IntegerProperty(default=0)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  modified = ndb.DateTimeProperty(auto_now=True)
 
   def __repr__(self):
-    return str(self.key().id()) + " " + self.name
+    return str(self.key.id()) + " " + self.name

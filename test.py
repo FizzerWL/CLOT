@@ -15,11 +15,11 @@ class TestPage(webapp2.RequestHandler):
 
   def renderPage(self, message):
     
-    players = Player.all()
-    playersDict = dict([(p.key().id(),p) for p in players])
+    players = Player.query()
+    playersDict = dict([(p.key.id(),p) for p in players])
 
-    gamePlayers = group(GamePlayer.all(), lambda z: z.gameID)
-    games = Game.all()
+    gamePlayers = group(GamePlayer.query(), lambda z: z.gameID)
+    games = Game.query()
 
     self.response.write(get_template('test.html').render({  'players': players, 'games': games, 'message': message }))
 
@@ -34,9 +34,9 @@ class TestPage(webapp2.RequestHandler):
   def post(self):
     if 'ClearData' in self.request.POST:
       #User clicked Clear Data, delete all games and players
-      db.delete(Game.all(keys_only=True))
-      db.delete(GamePlayer.all(keys_only=True))
-      db.delete(Player.all(keys_only=True))
+      ndb.delete_multi([o.key for o in Game.query()])
+      ndb.delete_multi([o.key for o in GamePlayer.query()])
+      ndb.delete_multi([o.key for o in Player.query()])
       TestPage.renderPage(self, 'Deleted all games and players')
 
     elif 'RunCron' in self.request.POST:

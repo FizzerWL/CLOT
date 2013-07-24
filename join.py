@@ -38,12 +38,12 @@ class JoinPage(webapp2.RequestHandler):
       return self.response.write('The supplied invite token is invalid. Please ensure you copied it from WarLight.net correctly.')
 
     #Ensure this invite token doesn't already exist
-    existing = Player.all().filter('inviteToken =', inviteToken).get()
+    existing = Player.query(Player.inviteToken == inviteToken).get()
     if existing:
       #If someone tries to join when they're already in the DB, just set their isParticipating flag back to true
       existing.isParticipating = True
-      existing.save()
-      return self.redirect('/player/' + str(existing.key().id()))
+      existing.put()
+      return self.redirect('/player/' + str(existing.key.id()))
 
     data = json.loads(apiret)
     player = Player(inviteToken=inviteToken, name=data['name'], color=data['color'])
@@ -52,4 +52,4 @@ class JoinPage(webapp2.RequestHandler):
     player.put()
     logging.info("Created player " + unicode(player))
   
-    return self.redirect('/player/' + str(player.key().id()))
+    return self.redirect('/player/' + str(player.key.id()))

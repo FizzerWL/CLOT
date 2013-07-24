@@ -1,28 +1,28 @@
 import os
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 import json
 
 import logging
 
-class Game(db.Model):
+class Game(ndb.Model):
   """Represents a game.  This has its own ID local to the CLOT, but it also stores wlnetGameID which is the ID of the game on WarLight.net.
   This also stores a winner field which contains a playerID only if the game is finished.
   The __repr__ function is just used for debugging."""
 
-  winner = db.IntegerProperty()
-  wlnetGameID = db.IntegerProperty(required=True)
-  name = db.StringProperty()
-  dateCreated = db.DateTimeProperty(auto_now_add=True)
-  dateEnded = db.DateTimeProperty()
+  winner = ndb.IntegerProperty()
+  wlnetGameID = ndb.IntegerProperty(required=True)
+  name = ndb.StringProperty()
+  dateCreated = ndb.DateTimeProperty(auto_now_add=True)
+  dateEnded = ndb.DateTimeProperty()
   def __repr__(self):
-    return str(self.key().id()) + " wlnetGameID=" + str(self.wlnetGameID)
+    return str(self.key.id()) + " wlnetGameID=" + str(self.wlnetGameID)
 
 
-class GamePlayer(db.Model):
+class GamePlayer(ndb.Model):
   """Represents a player in a game.  Each game will have at least two corresponding rows in this table."""
-  gameID = db.IntegerProperty(required=True)
-  playerID = db.IntegerProperty(required=True)
+  gameID = ndb.IntegerProperty(required=True)
+  playerID = ndb.IntegerProperty(required=True)
   def __repr__(self):
     return "gameID=" + str(self.gameID) + ",playerID=" + str(self.playerID)
 
@@ -47,12 +47,12 @@ def createGame(players, templateID):
     raise Exception("CreateGame returned error: " + apiRet.get('error', apiRetStr))
 
   g = Game(wlnetGameID=gid, name=gameName)
-  g.save()
+  g.put()
 
   for p in players:
-    GamePlayer(playerID = p.key().id(), gameID = g.key().id()).save()
+    GamePlayer(playerID = p.key.id(), gameID = g.key.id()).put()
 
-  logging.info("Created game " + str(g.key().id()) + " '" + gameName + "', wlnetGameID=" + str(gid))
+  logging.info("Created game " + str(g.key.id()) + " '" + gameName + "', wlnetGameID=" + str(gid))
 
   return g
 
