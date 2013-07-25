@@ -1,6 +1,7 @@
 import os
 
 from google.appengine.ext import ndb
+from google.appengine.api import memcache
 
 import logging
 import webapp2
@@ -8,17 +9,22 @@ from main import *
 
 from players import Player
 from games import Game
+import lot
 
 class HomePage(webapp2.RequestHandler):
   def get(self):
 
+    cache = memcache.get('home')
+    #if cache is not None:
+    #    return self.response.write(cache)
+
     #Check if we need to do first-time setup
-    if ClotConfig.query().count() == 0 and not api.TestMode:
+    if getClotConfig() is None:
       return self.redirect('/setup')
 
-    #Gather data used by home.html
-    players = Player.query()
-    playersDict = dict([(p.key.id(),p) for p in players])
-    games = Game.query()
+    html = get_template('home.html').render({ 'lots': list(lot.LOT.query()) })
 
-    self.response.write(get_template('home.html').render({ 'players': players, 'games': games}))
+    if not memcache.add('home', html):
+      logging.info("Memcache add failed")
+
+    self.response.write(html)

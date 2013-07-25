@@ -59,7 +59,7 @@ def testModeApi(api, postData):
 
   elif api.startswith('/API/GameFeed?GameID='):
     #When we simulate GameFeed, always return that the game is finished. Pick a winner randomly.  We access the Game table to find out which players are involved
-    wlnetGameID = int(api[21:])
+    wlnetGameID = long(api[21:])
     game = Game.query(Game.wlnetGameID == wlnetGameID).get()
     players = ndb.get_multi([ ndb.Key(Player, p) for p in game.players])
     winner = players[randint(0, len(players) - 1)] #pick a winner randomly

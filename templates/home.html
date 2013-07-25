@@ -3,40 +3,19 @@
 
 <h1>CLOT Home</h1>
 
-<h2>Players</h2>
-<table border="1">
-    <thead>
-        <tr>
-            <td>Rank</td>
-            <td>Player</td>
-        </tr>
-    </thead>
-    {%for player in players%}
-    <tr>
-        
-        <td>{{player.currentRank}}</td>
-        <td><a href="player/{{player.key.id}}">{{player.name|escape}}</a></td>
-    </tr>
+{%if lots|length == 0%}
+    The CLOT owner has yet to create any ladders or tournaments.  Please check back later!
+{%else%}
+
+Please choose which ladder or tournament you are interested in:<br /><br />
+<ul>
+    {%for lot in lots%}
+    <li>
+        <a href="/lot/{{lot.key.id()}}">{{lot.name|escape}}</a>
+    </li>
     {%endfor%}
-</table>
 
-<h2>Games</h2>
+</ul>
 
-<table border="1">
-    <thead>
-        <tr>
-            <td>Game</td>
-        </tr>
-    </thead>
-    {%for game in games%}
-    
-    <tr>
-        <td><a href="http://warlight.net/MultiPlayer?GameID={{ game.wlnetGameID}}">{{game.name}}</a></td>
-    </tr>
-
-    {%endfor%}
-</table>
-
-<br /><a href="/join">Join</a> | <a href="/leave">Leave</a>
-
+{%endif%}
 {%endblock%}

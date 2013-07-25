@@ -1,6 +1,6 @@
 ﻿import webapp2
 from main import *
-from api import *
+import api
 from wtforms import Form, TextField, validators
 
 
@@ -20,13 +20,13 @@ class SetupPage(webapp2.RequestHandler):
       self.response.write('Please provide all fields')
     else:
 
-      config = ClotConfig(adminEmail = form.adminEmail.data, adminApiToken = form.adminApiToken.data)
+      config = ClotConfig(key = ndb.Key(ClotConfig, 0), adminEmail = form.adminEmail.data, adminApiToken = form.adminApiToken.data)
 
       #Verify the email/apitoken work
-      verify = hitapiwithauth('/API/ValidateAPIToken', {}, config.adminEmail, config.adminApiToken)
+      verify = api.hitapiwithauth('/API/ValidateAPIToken', {}, config.adminEmail, config.adminApiToken)
       if not "apiTokenIsValid" in verify:
         self.response.write('The provided email or API Token were not valid. API returned: ' + verify)
       else:
         config.put()
-        self.redirect('/')
+        self.redirect('/addlot')
 

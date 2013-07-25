@@ -1,7 +1,7 @@
 {%extends "templates/base.html"%}
 {%block body%}
 
-<a href="/">&lt;&lt; Back</a>
+<a href="/lot/{{container.lot.key.id()}}">&lt;&lt; Back</a>
 <h1>Join</h1>
 
 
@@ -11,7 +11,7 @@ You can join using your WarLight.net account, which will cause you to start rece
 
 To join, you must provide your <b>invite token</b>.  To get your invite token, visit <a href="http://warlight.net/InviteToken">http://warlight.net/InviteToken</a>, and then copy/paste it from that page to this one.<br /><br />
 
-<form action="/join" method="post">
+<form method="post">
     <table cellspacing="9">
         {% for field in form %}
         <tr>

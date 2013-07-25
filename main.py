@@ -25,8 +25,7 @@ def getClotConfig():
   if api.TestMode:
     return ClotConfig(adminEmail='bogus', adminApiToken='bogus') #return a bogus one while we're in test mode. It'll never be used.
 
-  for c in ClotConfig.query():
-      return c
+  return ClotConfig.get_by_id(ndb.Key(ClotConfig, 0))
 
 
 
@@ -39,5 +38,11 @@ def group(collection, keyfunc):
 
 def flatten(listoflists):
   return [j for i in listoflists for j in i]
+
+def addIfNotPresent(list, toAdd):
+  for e in list:
+    if e == toAdd:
+      return
+  list.append(toAdd)
 
 import api

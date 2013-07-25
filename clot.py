@@ -10,13 +10,13 @@ from games import Game, createGame
 from players import Player
 from main import *
 
-def createGames():
+def createGames(container):
   """This is called periodically to check for new games that need to be created.  
   You should replace this with your own logic for how games are to be created.
   Right now, this function just randomly pairs up players who aren't in a game."""
 
   #Retrieve all games that are ongoing
-  activeGames = list(Game.query(Game.winner == None))
+  activeGames = [g for g in container.games if g.winner is None]
   activeGameIDs = dict([[g.key.id(), g] for g in activeGames])
   logging.info("Active games: " + unicode(activeGameIDs))
 
@@ -24,7 +24,7 @@ def createGames():
   playerIDsInActiveGames = set(flatten([g.players for g in activeGames]))
 
   #Find all players who aren't any active games and also have not left the CLOT (isParticipating is true)
-  playersNotInGames = [p for p in Player.query(Player.isParticipating == True) if p.key.id() not in playerIDsInActiveGames]
+  playersNotInGames = [container.players[p] for p in container.lot.playersParticipating if p not in playerIDsInActiveGames]
   logging.info("Players not in games: " + ','.join([unicode(p) for p in playersNotInGames]))
 
   #Randomize the order
@@ -34,7 +34,7 @@ def createGames():
   templateID = 251301
 
   #Create a game for everyone not in a game.
-  gamesCreated = [createGame(pair, templateID) for pair in pairs(playersNotInGames)]
+  gamesCreated = [createGame(container, pair, templateID) for pair in pairs(playersNotInGames)]
   logging.info("Created games " + unicode(','.join([unicode(g) for g in gamesCreated])))
 
 def pairs(lst):
@@ -42,13 +42,13 @@ def pairs(lst):
   for i in range(1, len(lst), 2):
     yield lst[i-1], lst[i]
 
-def setRanks():
+def setRanks(container):
   """This looks at what games everyone has won and sets their currentRank field.
   The current algorithm is very simple - just award ranks based on number of games won.
   You should replace this with your own ranking logic."""
 
   #Load all finished games
-  finishedGames = Game.query(Game.winner != None)
+  finishedGames = [g for g in container.games if g.winner != None]
 
   #Group them by who won
   finishedGamesGroupedByWinner = group(finishedGames, lambda g: g.winner)
@@ -57,15 +57,13 @@ def setRanks():
   winCounts = dict(map(lambda (playerID,games): (playerID, len(games)), finishedGamesGroupedByWinner.items())) 
 
   #Map this from Player.query() to ensure we have an entry for every player, even those with no wins
-  playersMappedToNumWins = [(p, winCounts.get(p.key.id(), 0)) for p in Player.query()] 
+  playersMappedToNumWins = [(p, winCounts.get(p.key.id(), 0)) for p in container.players.values()]
 
   #sort by the number of wins each player has.
   playersMappedToNumWins.sort(key=lambda (player,numWins): numWins, reverse=True)
 
-  #Now that it's sorted, we can just loop through each player and set their currentRank
-  for index,(player,numWins) in enumerate(playersMappedToNumWins):
-    player.currentRank = index + 1 #index is 0-based, and we want our top player to be ranked #1, so we add one.
-    player.put()
+  #Store the player IDs back into the LOT object
+  container.lot.playerRanks = [p[0].key.id() for p in playersMappedToNumWins]
 
   logging.info('setRanks finished')
 

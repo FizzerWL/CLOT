@@ -7,30 +7,38 @@ import logging
 import json
 import webapp2
 
-from clot import createGames
-from clot import setRanks
+import clot
 from games import Game
 from api import hitapi
 from players import Player
-
+import lot
 
 class CronPage(webapp2.RequestHandler):
   def get(self):
-    execute()
+
+    for lotInst in lot.LOT.query():
+      if not lotInst.hasEnded():
+        execute(lot.getLot(lotInst.key))
+    
     self.response.write("Cron complete")
 
-def execute():
-  logging.info("Starting cron...")
-  checkInProgressGames()
-  createGames()
-  setRanks()
+def execute(container):
+  logging.info("Starting cron for " + container.lot.name + "...")
+  checkInProgressGames(container)
+  clot.createGames(container)
+  clot.setRanks(container)
+
+  #Update the cache. We may not have changed anything, but we update it all of the time anyway. If we wanted to improve this we could set a dirty flag and check it here.
+  container.lot.put()
+  container.changed()
+
   logging.info("Cron done")
 
-def checkInProgressGames():
+def checkInProgressGames(container):
   """This is called periodically to look for games that are finished.  If we find a finished game, we record the winner"""
 
   #Find all games that we think aren't finished
-  activeGames = Game.query(Game.winner == None)
+  activeGames = [g for g in container.games if g.winner is None]
 
   for g in activeGames:
     #call WarLight's GameFeed API so that it can tell us if it's finished or not

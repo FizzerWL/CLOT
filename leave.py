@@ -9,16 +9,16 @@ import webapp2
 from wtforms import *
 from main import *
 from players import Player
-
+import lot
 
 class LeaveForm(Form):
   inviteToken = TextField("Invite Token", [validators.required()])
 
 class LeavePage(webapp2.RequestHandler):
-  def get(self):
-    self.response.write(get_template('leave.html').render({ 'form': LeaveForm() }))
+  def get(self, lotID):
+    self.response.write(get_template('leave.html').render({ 'form': LeaveForm(), 'container': lot.getLot(lotID) }))
 
-  def post(self):
+  def post(self, lotID):
 
     form = LeaveForm(self.request.POST)
 
@@ -33,10 +33,14 @@ class LeavePage(webapp2.RequestHandler):
     if not player:
       return self.response.write("Invite token is invalid")
 
-    #When they leave, just set their isParticipating to false
-    player.isParticipating = False
-    player.put()
+    #When they leave, remove them from this lot
+    container = lot.getLot(lotID)
 
-    logging.info("Player left ladder " + unicode(player))
+    if player.key.id() in container.lot.playersParticipating:
+      container.lot.playersParticipating.remove(player.key.id())
+      container.lot.put()
+      container.changed()
+      logging.info("Player left ladder " + unicode(player))
+
     self.redirect('/player/' + str(player.key.id()))
 
