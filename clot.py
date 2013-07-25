@@ -67,3 +67,9 @@ def setRanks(container):
 
   logging.info('setRanks finished')
 
+
+def gameFailedToStart(elapsed):
+  """This is called for games that are in the lobby.  We should determine if the game failed to
+  start or not based on how long it's been in the lobby"""
+
+  return elapsed.days >= 3  #after 3 days, assume the game failed to start

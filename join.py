@@ -50,6 +50,7 @@ class JoinPage(webapp2.RequestHandler):
 
     #Set them as participating in the current lot
     addIfNotPresent(container.lot.playersParticipating, player.key.id())
+    container.players[player.key.id()] = player
     container.lot.put()
     container.changed()
     logging.info("Player " + unicode(player) + " joined " + unicode(container.lot))

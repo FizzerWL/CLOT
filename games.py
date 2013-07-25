@@ -17,6 +17,7 @@ class Game(ndb.Model):
   name = ndb.StringProperty()
   dateCreated = ndb.DateTimeProperty(auto_now_add=True)
   dateEnded = ndb.DateTimeProperty()
+  deleted = ndb.BooleanProperty(default=False) #Set to true if this game was deleted over on WarLight.
 
   def __repr__(self):
     return str(self.key.id()) + ", wlnetGameID=" + str(self.wlnetGameID) + ", players=" + unicode(self.players)

@@ -21,11 +21,13 @@ class ClotConfig(ndb.Model):
   adminApiToken = ndb.StringProperty(required=True)
 
 
+
 def getClotConfig():
   if api.TestMode:
     return ClotConfig(adminEmail='bogus', adminApiToken='bogus') #return a bogus one while we're in test mode. It'll never be used.
 
-  return ClotConfig.get_by_id(ndb.Key(ClotConfig, 0))
+  #Use get_multi instead of get_by_id so that we return None if it doesn't exist. home.py uses this to tell if we're not setup yet
+  return ndb.get_multi([ndb.Key(ClotConfig, 1)])[0]
 
 
 

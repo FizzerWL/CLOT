@@ -2,6 +2,7 @@
 
 from google.appengine.ext import db
 
+import random
 import datetime
 import logging
 import json
@@ -9,8 +10,9 @@ import webapp2
 
 import clot
 from games import Game
-from api import hitapi
+from api import hitapi, postToApi
 from players import Player
+from main import *
 import lot
 
 class CronPage(webapp2.RequestHandler):
@@ -49,18 +51,57 @@ def checkInProgressGames(container):
 
     if state == 'Finished':
       #It's finished. Record the winner and save it back.
-      winner = findWinner(data)
+      winner = findWinner(container, data)
       logging.info('Identified the winner of game ' + str(g.wlnetGameID) + ' is ' + unicode(winner))
       g.winner = winner.key.id()
       g.dateEnded = datetime.datetime.now()
       g.put()
+    elif state == 'WaitingForPlayers':
+      #It's in the lobby still. Check if it's been too long.
+      elapsed = datetime.datetime.now() - g.dateCreated
+      if clot.gameFailedToStart(elapsed):
+        logging.info("Game " + str(g.wlnetGameID) + " is in the lobby for " + str(elapsed.days) + " days.")
+      else:
+        logging.info('Game ' + str(g.wlnetGameID) + " is stuck in the lobby. Marking it as a loss for anyone who didn't join and deleting it.")
+
+        #Delete it over at warlight.net so that players know we no longer consider it a real game
+        config = getClotConfig()
+        deleteRet = postToApi('/API/DeleteLobbyGame', json.dumps( { 
+                                     'Email': config.adminEmail, 
+                                     'APIToken': config.adminApiToken,
+                                     'gameID': g.wlnetGameID }))
+
+        #If the API doesn't return success, just ignore this game on this run. This can happen if the game just started between when we checked its status and when we told it to delete.
+        if 'success' not in deleteRet:
+          logging.info("DeleteLobbyGame did not return success. Ignoring this game for this run.  Return=" + deleteRet)
+        else:
+          #We deleted the game.  Mark it as deleted and finished
+          g.deleted = True
+          g.winner = findWinnerOfDeletedGame(container, data).key.id()
+          g.put()
+
     else:
       #It's still going.
       logging.info('Game ' + str(g.wlnetGameID) + ' is not finished, state=' + state + ', numTurns=' + data['numberOfTurns'])
 
-def findWinner(data):
+def findWinner(container, data):
   """Simple helper function to return the Player who won the game.  This takes json data returned by the GameFeed 
   API.  We just look for a player with the "won" state and then retrieve their Player instance from the database"""
   winnerInviteToken = filter(lambda p: p['state'] == 'Won', data['players'])[0]["id"]
-  return Player.query(Player.inviteToken == winnerInviteToken).get()
+  return getPlayerByInviteToken(container, winnerInviteToken)
 
+def findWinnerOfDeletedGame(container, data):
+  """Simple helper function to return the Player who should be declared the winner of a game that never began.
+  If it didn't begin, it's because someone either didn't join the game or declined it.  They'll be considered
+  the loser, so whoever joined is the winner by default."""
+
+  joined = filter(lambda p: p['state'] == 'Playing', data['players'])
+  if len(joined) > 0:
+    return getPlayerByInviteToken(container, random.choice(joined)["id"])
+
+  """If everyone declined or failed to join, we just pick the winner randomly since the Game data structure 
+  currently assumes there's always one winner."""
+  return getPlayerByInviteToken(container, random.choice(data['players'])["id"])
+
+def getPlayerByInviteToken(container, inviteToken):
+  return [p for p in container.players.values() if p.inviteToken == inviteToken][0]

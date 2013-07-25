@@ -20,7 +20,7 @@ class SetupPage(webapp2.RequestHandler):
       self.response.write('Please provide all fields')
     else:
 
-      config = ClotConfig(key = ndb.Key(ClotConfig, 0), adminEmail = form.adminEmail.data, adminApiToken = form.adminApiToken.data)
+      config = ClotConfig(key = ndb.Key(ClotConfig, 1), adminEmail = form.adminEmail.data, adminApiToken = form.adminApiToken.data)
 
       #Verify the email/apitoken work
       verify = api.hitapiwithauth('/API/ValidateAPIToken', {}, config.adminEmail, config.adminApiToken)

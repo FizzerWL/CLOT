@@ -12,7 +12,7 @@ import json
 
 
 
-TestMode = True  #If you enable TestMode here, all calls to the WarLight API that your code
+TestMode = False  #If you enable TestMode here, all calls to the WarLight API that your code
                  # makes will be intercepted and dummy data will be returned.  This is useful
                  # for testing your code before you release it to the public.  Make sure to 
                  # change this back to False before releasing your app.
