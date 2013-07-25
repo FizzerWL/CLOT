@@ -9,7 +9,7 @@ from games import Game
 from players import Player
 
 
-class PlayerPage(webapp2.RequestHandler):
+class PlayerPage(BaseHandler):
   def get(self, playerID):
     playerID = long(playerID)
     p = Player.get_by_id(playerID)

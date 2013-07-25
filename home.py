@@ -11,7 +11,7 @@ from players import Player
 from games import Game
 import lot
 
-class HomePage(webapp2.RequestHandler):
+class HomePage(BaseHandler):
   def get(self):
 
     cache = memcache.get('home')

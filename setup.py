@@ -8,7 +8,7 @@ class SetupForm(Form):
   adminEmail = TextField('Your WarLight E-Mail', [validators.required()])
   adminApiToken = TextField('Your API Token', [validators.required()])
 
-class SetupPage(webapp2.RequestHandler):
+class SetupPage(BaseHandler):
   def get(self):
     self.response.write(get_template('setup.html').render({ 'form': SetupForm() }))
 

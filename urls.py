@@ -9,6 +9,13 @@ from cron import CronPage
 from test import TestPage
 from viewlot import ViewLotPage
 from addlot import AddLotPage
+from login import LoginPage
+
+config = {}
+config['webapp2_extras.sessions'] = {
+    'secret_key': 'VxZwg0oAiZPJ6gqaF1Nb',
+}
+
 
 application = webapp2.WSGIApplication([
     ('/', HomePage),
@@ -20,4 +27,5 @@ application = webapp2.WSGIApplication([
     ('/test/(\d+)', TestPage),
     ('/addlot', AddLotPage),
     ('/lot/(\d+)', ViewLotPage),
-], debug=True)
+    ('/login', LoginPage),
+], debug=True, config=config)

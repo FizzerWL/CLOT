@@ -7,40 +7,29 @@ import webapp2
 import json
 
 
-from api import hitapi
+from api import hitapi, wlnet
 from main import *
 from players import Player
 from wtforms import *
 import lot
 
 
-class JoinForm(Form):
-  inviteToken = TextField('Invite token', [validators.required()])
 
-
-class JoinPage(webapp2.RequestHandler):
+class JoinPage(BaseHandler):
   def get(self, lotID):
-    self.response.write(get_template('join.html').render({ 'form': JoinForm(), 'container': lot.getLot(lotID) }))
-
-  def post(self, lotID):
+    if 'authenticatedtoken' not in self.session:
+      return self.redirect('http://' + wlnet + "/CLOT/Auth?p=62456969&state=join/" + str(long(lotID)))
 
     container = lot.getLot(lotID)
-
-    form = JoinForm(self.request.POST)
-
-    if not form.validate():
-      return self.response.write("You must enter an invite token")
-      
-
-    inviteToken = form.inviteToken.data
+    inviteToken = self.session['authenticatedtoken']
 
     #Call the warlight API to get the name, color, and verify that the invite token is correct
     apiret = hitapi('/API/ValidateInviteToken', { 'Token':  inviteToken })
 
     if not "tokenIsValid" in apiret:
-      return self.response.write('The supplied invite token is invalid. Please ensure you copied it from WarLight.net correctly.')
+      return self.response.write('The supplied invite token is invalid.  Please contact the CLOT author for assistance.')
 
-    #Ensure this invite token doesn't already exist
+    #Check if this invite token is new to us
     player = Player.query(Player.inviteToken == inviteToken).get()
     if player is None:
       data = json.loads(apiret)
@@ -54,5 +43,5 @@ class JoinPage(webapp2.RequestHandler):
     container.lot.put()
     container.changed()
     logging.info("Player " + unicode(player) + " joined " + unicode(container.lot))
-  
-    return self.redirect('/player/' + str(player.key.id()))
+
+    self.response.write(get_template('join.html').render({ 'container': container }))

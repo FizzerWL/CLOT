@@ -1,36 +1,8 @@
 {%extends "templates/base.html"%}
 {%block body%}
 
-<a href="/lot/{{container.lot.key.id()}}">&lt;&lt; Back</a>
 <h1>Join</h1>
 
-
-You can join using your WarLight.net account, which will cause you to start receiving new games.
-
-<br /><br />
-
-To join, you must provide your <b>invite token</b>.  To get your invite token, visit <a href="http://warlight.net/InviteToken">http://warlight.net/InviteToken</a>, and then copy/paste it from that page to this one.<br /><br />
-
-<form method="post">
-    <table cellspacing="9">
-        {% for field in form %}
-        <tr>
-            <td>
-                {{ field.label }}:
-            </td>
-            <td>
-                {{ field }}
-            </td>
-
-        </tr>    
-        {% endfor %}
-
-        <tr>
-            <td colspan="2" style="text-align: center">
-                <input type="submit" value="Join">
-            </td>
-        </tr>
-    </table>
-</form>
+You have successfully joined the ladder or tournament <a href="/lot/{{container.lot.key.id()}}">{{container.lot.name|escape}}</a>!
 
 {%endblock%}

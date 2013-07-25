@@ -15,7 +15,7 @@ from players import Player
 from main import *
 import lot
 
-class CronPage(webapp2.RequestHandler):
+class CronPage(BaseHandler):
   def get(self):
 
     for lotInst in lot.LOT.query():
@@ -59,7 +59,7 @@ def checkInProgressGames(container):
     elif state == 'WaitingForPlayers':
       #It's in the lobby still. Check if it's been too long.
       elapsed = datetime.datetime.now() - g.dateCreated
-      if clot.gameFailedToStart(elapsed):
+      if not clot.gameFailedToStart(elapsed):
         logging.info("Game " + str(g.wlnetGameID) + " is in the lobby for " + str(elapsed.days) + " days.")
       else:
         logging.info('Game ' + str(g.wlnetGameID) + " is stuck in the lobby. Marking it as a loss for anyone who didn't join and deleting it.")

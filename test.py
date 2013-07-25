@@ -15,7 +15,7 @@ import random
 import string
 import lot
 
-class TestPage(webapp2.RequestHandler):
+class TestPage(BaseHandler):
 
   def renderPage(self, lotID, message):
     

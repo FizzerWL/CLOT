@@ -13,13 +13,12 @@ import json
 
 
 TestMode = False  #If you enable TestMode here, all calls to the WarLight API that your code
-                 # makes will be intercepted and dummy data will be returned.  This is useful
-                 # for testing your code before you release it to the public.  Make sure to 
-                 # change this back to False before releasing your app.
+                  # makes will be intercepted and dummy data will be returned.  This is useful
+                  # for testing your code before you release it to the public.  Make sure to 
+                  # change this back to False before releasing your app.
 
 
-#wlnet = 'warlight.net'
-wlnet = '192.168.1.105:81'
+wlnet = 'warlight.net'
 
   
 
@@ -68,8 +67,12 @@ def testModeApi(api, postData):
                      "players": [{ "id": p.inviteToken, "isAI": "False", "state": "Won" if p == winner else "SurrenderAccepted" } for p in players] })
 
   elif api == '/API/ValidateInviteToken':
-
     return json.dumps({ "tokenIsValid": "", "name": "Fake " + postDataDict["Token"][0], "isMember": "True", "color": "#FF0000", "tagline": "Fake player created by TestMode=True", "clotpass": "fake" })
+
+  elif api == '/API/DeleteLobbyGame':
+    #just pretend we did it.  We don't need to take any action.
+    return 'success' 
+
   else:
     raise Exception("No test handler for api " + api)
 
