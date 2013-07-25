@@ -18,8 +18,8 @@ TestMode = True  #If you enable TestMode here, all calls to the WarLight API tha
                  # change this back to False before releasing your app.
 
 
-wlnet = 'warlight.net'
-#wlnet = '192.168.1.105:81'
+#wlnet = 'warlight.net'
+wlnet = '192.168.1.105:81'
 
   
 
@@ -61,8 +61,7 @@ def testModeApi(api, postData):
     #When we simulate GameFeed, always return that the game is finished. Pick a winner randomly.  We access the Game table to find out which players are involved
     wlnetGameID = int(api[21:])
     game = Game.query(Game.wlnetGameID == wlnetGameID).get()
-    gamePlayers = GamePlayer.query(GamePlayer.gameID == game.key.id())
-    players = ndb.get_multi([ ndb.Key(Player, gp.playerID) for gp in gamePlayers])
+    players = ndb.get_multi([ ndb.Key(Player, p) for p in game.players])
     winner = players[randint(0, len(players) - 1)] #pick a winner randomly
 
     return json.dumps({ "id": wlnetGameID, "state": "Finished", "name": game.name, "numberOfTurns": randint(7, 14), 
@@ -77,6 +76,6 @@ def testModeApi(api, postData):
 
 
 from main import getClotConfig
-from games import Game, GamePlayer
+from games import Game
 from players import Player
 

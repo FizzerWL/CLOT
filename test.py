@@ -5,7 +5,7 @@ from api import TestMode
 from main import *
 
 from players import Player
-from games import Game, GamePlayer
+from games import Game
 from datetime import datetime, date
 import cron
 import random
@@ -17,8 +17,6 @@ class TestPage(webapp2.RequestHandler):
     
     players = Player.query()
     playersDict = dict([(p.key.id(),p) for p in players])
-
-    gamePlayers = group(GamePlayer.query(), lambda z: z.gameID)
     games = Game.query()
 
     self.response.write(get_template('test.html').render({  'players': players, 'games': games, 'message': message }))
@@ -35,7 +33,6 @@ class TestPage(webapp2.RequestHandler):
     if 'ClearData' in self.request.POST:
       #User clicked Clear Data, delete all games and players
       ndb.delete_multi([o.key for o in Game.query()])
-      ndb.delete_multi([o.key for o in GamePlayer.query()])
       ndb.delete_multi([o.key for o in Player.query()])
       TestPage.renderPage(self, 'Deleted all games and players')
 
@@ -54,6 +51,13 @@ class TestPage(webapp2.RequestHandler):
         Player(name=name, inviteToken=name, color="#0000FF").put()
       
       TestPage.renderPage(self, 'Added ' + str(numPlayers) + ' fake players')
+
+    elif 'Test' in self.request.POST:
+
+      #Just a blank space for testing random stuff
+      
+      
+      TestPage.renderPage(self, 'Ran test code')
 
     else:
       self.response.write("No handler")

@@ -6,11 +6,9 @@ import logging
 import random
 import json
 
-from games import Game
-from games import GamePlayer
-from games import createGame
+from games import Game, createGame
 from players import Player
-from main import group
+from main import *
 
 def createGames():
   """This is called periodically to check for new games that need to be created.  
@@ -23,11 +21,10 @@ def createGames():
   logging.info("Active games: " + unicode(activeGameIDs))
 
   #Throw all of the player IDs that are in these ongoing games into a dictionary
-  playerIDsInGames = dict([[gp.playerID, gp] for gp in GamePlayer.query() if gp.gameID in activeGameIDs])
+  playerIDsInActiveGames = set(flatten([g.players for g in activeGames]))
 
-  #Find all players who aren't in the dictionary (and therefore aren't in any games) and also have not left the CLOT (isParticipating is true)
-  allPlayers = Player.query()
-  playersNotInGames = [p for p in allPlayers if p.isParticipating and p.key.id() not in playerIDsInGames]
+  #Find all players who aren't any active games and also have not left the CLOT (isParticipating is true)
+  playersNotInGames = [p for p in Player.query(Player.isParticipating == True) if p.key.id() not in playerIDsInActiveGames]
   logging.info("Players not in games: " + ','.join([unicode(p) for p in playersNotInGames]))
 
   #Randomize the order

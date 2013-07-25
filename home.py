@@ -7,7 +7,6 @@ import webapp2
 from main import *
 
 from players import Player
-from games import GamePlayer
 from games import Game
 
 class HomePage(webapp2.RequestHandler):
@@ -20,8 +19,6 @@ class HomePage(webapp2.RequestHandler):
     #Gather data used by home.html
     players = Player.query()
     playersDict = dict([(p.key.id(),p) for p in players])
-
-    gamePlayers = group(GamePlayer.query(), lambda z: z.gameID)
     games = Game.query()
 
     self.response.write(get_template('home.html').render({ 'players': players, 'games': games}))

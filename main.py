@@ -37,4 +37,7 @@ def group(collection, keyfunc):
     ret[k] = list(g)
   return ret
 
+def flatten(listoflists):
+  return [j for i in listoflists for j in i]
+
 import api
