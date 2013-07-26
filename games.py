@@ -2,6 +2,7 @@ import os
 
 from google.appengine.ext import ndb
 import json
+import urlparse
 
 import logging
 
@@ -23,7 +24,7 @@ class Game(ndb.Model):
     return str(self.key.id()) + ", wlnetGameID=" + str(self.wlnetGameID) + ", players=" + unicode(self.players)
 
 
-def createGame(container, players, templateID):
+def createGame(request, container, players, templateID):
   """This calls the WarLight.net API to create a game, and then creates the Game rows in the local DB"""
   gameName = ' vs '.join([p.name for p in players])[:50]
 
@@ -33,7 +34,7 @@ def createGame(container, players, templateID):
                                'hostAPIToken': config.adminApiToken,
                                'templateID': templateID,
                                'gameName': gameName,
-                               'personalMessage': '',
+                               'personalMessage': 'Created by the CLOT at http://' + urlparse.urlparse(request.url).netloc,
                                'players': [ { 'token': p.inviteToken, 'team': 'None' } for p in players]
                                }))
   apiRet = json.loads(apiRetStr)

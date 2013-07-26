@@ -20,14 +20,14 @@ class CronPage(BaseHandler):
 
     for lotInst in lot.LOT.query():
       if not lotInst.hasEnded():
-        execute(lot.getLot(lotInst.key))
+        execute(self.request, lot.getLot(lotInst.key))
     
     self.response.write("Cron complete")
 
-def execute(container):
+def execute(request, container):
   logging.info("Starting cron for " + container.lot.name + "...")
   checkInProgressGames(container)
-  clot.createGames(container)
+  clot.createGames(request, container)
   clot.setRanks(container)
 
   #Update the cache. We may not have changed anything, but we update it all of the time anyway. If we wanted to improve this we could set a dirty flag and check it here.
@@ -80,6 +80,13 @@ def checkInProgressGames(container):
           g.winner = findWinnerOfDeletedGame(container, data).key.id()
           g.put()
 
+          #Also remove anyone that declines or fails to join from the ladder.  This is important for real-time ladders since we don't want idle people staying in forever, but you may not want this for your situation
+          for playerID in [getPlayerByInviteToken(container, p['id']).key.id() for p in data['players'] if p['state'] != 'Playing']:
+            if playerID in container.lot.playersParticipating:
+              container.lot.playersParticipating.remove(playerID)
+              logging.info("Removed " + str(playerID) + " from ladder since they did not join game " + str(g.wlnetGameID))
+
+
     else:
       #It's still going.
       logging.info('Game ' + str(g.wlnetGameID) + ' is not finished, state=' + state + ', numTurns=' + data['numberOfTurns'])
@@ -87,8 +94,12 @@ def checkInProgressGames(container):
 def findWinner(container, data):
   """Simple helper function to return the Player who won the game.  This takes json data returned by the GameFeed 
   API.  We just look for a player with the "won" state and then retrieve their Player instance from the database"""
-  winnerInviteToken = filter(lambda p: p['state'] == 'Won', data['players'])[0]["id"]
-  return getPlayerByInviteToken(container, winnerInviteToken)
+  winners = filter(lambda p: p['state'] == 'Won', data['players'])
+  if len(winners) == 0:
+    #The only way there can be no winner is if the players VTE.  Just pick one at random, since the Game structure always assumes there's a winner.  Alternatively we could just delete the game.
+    return getPlayerByInviteToken(container, random.choice(data['players'])["id"])
+  else:
+    return getPlayerByInviteToken(container, winners[0]["id"])
 
 def findWinnerOfDeletedGame(container, data):
   """Simple helper function to return the Player who should be declared the winner of a game that never began.

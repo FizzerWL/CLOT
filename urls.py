@@ -10,6 +10,7 @@ from test import TestPage
 from viewlot import ViewLotPage
 from addlot import AddLotPage
 from login import LoginPage
+from finishlot import FinishLotPage
 
 config = {}
 config['webapp2_extras.sessions'] = {
@@ -28,4 +29,5 @@ application = webapp2.WSGIApplication([
     ('/addlot', AddLotPage),
     ('/lot/(\d+)', ViewLotPage),
     ('/login', LoginPage),
+    ('/finishlot/(\d+)', FinishLotPage),
 ], debug=True, config=config)

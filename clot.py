@@ -10,7 +10,7 @@ from games import Game, createGame
 from players import Player
 from main import *
 
-def createGames(container):
+def createGames(request, container):
   """This is called periodically to check for new games that need to be created.  
   You should replace this with your own logic for how games are to be created.
   Right now, this function just randomly pairs up players who aren't in a game."""
@@ -34,7 +34,7 @@ def createGames(container):
   templateID = 251301
 
   #Create a game for everyone not in a game.
-  gamesCreated = [createGame(container, pair, templateID) for pair in pairs(playersNotInGames)]
+  gamesCreated = [createGame(request, container, pair, templateID) for pair in pairs(playersNotInGames)]
   logging.info("Created games " + unicode(','.join([unicode(g) for g in gamesCreated])))
 
 def pairs(lst):
@@ -54,10 +54,10 @@ def setRanks(container):
   finishedGamesGroupedByWinner = group(finishedGames, lambda g: g.winner)
 
   #Get rid of the game data, and replace it with the number of games each player won
-  winCounts = dict(map(lambda (playerID,games): (playerID, len(games)), finishedGamesGroupedByWinner.items())) 
+  container.lot.playerWins = dict(map(lambda (playerID,games): (playerID, len(games)), finishedGamesGroupedByWinner.items())) 
 
   #Map this from Player.query() to ensure we have an entry for every player, even those with no wins
-  playersMappedToNumWins = [(p, winCounts.get(p.key.id(), 0)) for p in container.players.values()]
+  playersMappedToNumWins = [(p, container.lot.playerWins.get(p.key.id(), 0)) for p in container.players.values()]
 
   #sort by the number of wins each player has.
   playersMappedToNumWins.sort(key=lambda (player,numWins): numWins, reverse=True)
@@ -72,4 +72,4 @@ def gameFailedToStart(elapsed):
   """This is called for games that are in the lobby.  We should determine if the game failed to
   start or not based on how long it's been in the lobby"""
 
-  return elapsed.days >= 3  #after 3 days, assume the game failed to start
+  return elapsed.seconds >= 600

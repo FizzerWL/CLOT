@@ -2,6 +2,7 @@
 import webapp2
 import logging
 import pickle
+import urlparse
 from google.appengine.api import memcache
 
 from api import TestMode
@@ -48,7 +49,7 @@ class TestPage(BaseHandler):
     elif 'RunCron' in self.request.POST:
       #Just execute the same thing that we'd do if we hit /cron, but also time it
       start = datetime.now()
-      cron.execute(container)
+      cron.execute(self.request, container)
       TestPage.renderPage(self, lotID, 'Cron finished in ' + unicode(datetime.now() - start))
     
     elif 'AddPlayers' in self.request.POST:
