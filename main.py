@@ -41,6 +41,7 @@ def group(collection, keyfunc):
   return ret
 
 def flatten(listoflists):
+  """Takes a list of lists and returns those items in a single list"""
   return [j for i in listoflists for j in i]
 
 def addIfNotPresent(list, toAdd):
